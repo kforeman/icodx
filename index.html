@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<!--	Author:		Kyle Foreman (kforeman@post.harvard.edu)
+			Date:		7 February 2012
+			Purpose:	Visualize the cause of death database
+	-->
+	<head>
+  
+	<!-- header/title stuff -->
+		<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>
+		<title>CoD DB</title>
+	
+	<!-- load in d3 -->
+		<script type='text/javascript' src='lib/d3-2.7.4/d3.min.js'></script>
+		<script type='text/javascript' src='lib/d3-2.7.4/d3.geo.min.js'></script>
+		<script type='text/javascript' src='lib/d3-2.7.4/d3.csv.min.js'></script>
+		<script type='text/javascript' src='lib/d3-2.7.4/d3.layout.min.js'></script>
+		<script type='text/javascript' src='lib/colorbrewer.js'></script>
+	
+	<!-- load in jquery libraries -->
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery-1.7.min.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery.ui.widget.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery.poshytip.min.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery.ui.widget.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/js/jquery.mousewheel.js'></script>
+		<script type='text/javascript' src='lib/jquery-ui-1.8.16/plugins/chosen/chosen.jquery.min.js'></script>
+		<link type='text/css' rel='stylesheet' href='lib/jquery-ui-1.8.16/css/custom-theme/jquery-ui-1.8.16.custom.css'/>
+		<link type='text/css' rel='stylesheet' href='lib/jquery-ui-1.8.16/css/custom-theme/poshytip.twitter.css'/>
+		<link type='text/css' rel='stylesheet' href='lib/jquery-ui-1.8.16/plugins/chosen/chosen.css'/>
+	
+	<!-- load Google web font (Open Sans) -->
+		<script type="text/javascript">
+			WebFontConfig = {
+			   google: { families: [ 'Open+Sans:700italic,400italic,700,400:latin' ] }
+			};
+			(function() {
+			  var wf = document.createElement('script');
+			  wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+			    '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+			  wf.type = 'text/javascript';
+			  wf.async = 'true';
+			  var s = document.getElementsByTagName('script')[0];
+			  s.parentNode.insertBefore(wf, s);
+			})(); 
+		</script>
+		<link type='text/css' rel='stylesheet' href='css/font.css'/>
+	
+	<!-- preload some things (like cause/country list) -->
+		<script type='text/javascript' src='resources/geo_list.js'></script>
+		<script type='text/javascript' src='js/preload.js'></script>
+	
+	<!-- load parameters (either defaults or parsed from hash) -->
+		<!--<script type='text/javascript' src='js/settings.js'></script>-->
+	
+	<!-- well hello there, Mr iPad -->
+		<meta name="apple-mobile-web-app-capable" content="yes">
+	  
+	</head>
+	
+
+	<body>
+	
+	<!-- create the basic page layout -->
+		<script type='text/javascript' src='js/layout.js'></script>
+		<link type='text/css' rel='stylesheet' href='css/layout.css'/>
+	
+	<!-- add menus -->
+		<script type='text/javascript' src='js/menu.js'></script>
+		<link type='text/css' rel='stylesheet' href='css/menu.css'/>
+	
+	<!-- functions for retrieving data -->
+		<script type='text/javascript' src='js/data.js'></script>
+
+	<!-- functions/styling for creating tooltips with meta data -->
+		<link type='text/css' rel='stylesheet' href='css/tip-ihme.css'/>
+		<script type='text/javascript' src='js/tooltips.js'></script>
+
+	<!-- make plots/axes -->
+		<script type='text/javascript' src='resources/custom_axis.js'></script>
+		<script type='text/javascript' src='js/plots.js'></script>
+		<link type='text/css' rel='stylesheet' href='css/plots.css'/>
+	
+	
+  </body>
+</html>
