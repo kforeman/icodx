@@ -44,6 +44,18 @@
 	z-index: 2;
 }
 
+.bug_report {
+	font-weight: bold;
+	color: #555;
+	cursor: pointer;
+	font-size: 14px;
+	text-decoration: none;
+}
+.bug_report:hover {
+	color: #ef3b2c !important;
+}
+
+
 .ui-slider {
 	height: 10px !important;
 	margin-top: 10px !important;

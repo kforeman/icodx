@@ -24,6 +24,9 @@
 			years.map(function(y) {
 				pop_env_data[g.code][s][y] = {};
 			});
+			cause_list.map(function(c) {
+				data[g.code][s][c.cause_viz] = [];
+			});
 		});
 	});
 
@@ -47,8 +50,17 @@
 			else var tmp = data[geo][sex][cause];
 		
 		// return the requested data
-			return tmp.filter(function(d) { return d.year >= start_year; });
+			if (typeof tmp == 'undefined') return [];
+			else return tmp.filter(function(d) { return d.year >= start_year; });
 	}
+	
+
+
+// ----------- NOTE: instead of the json.map() below for regions, let's implement a loop through the countries, doing separate AJAX requests for each (instead of requesting them all at once and then going through the trouble of parsing everything) ------------ //
+
+
+
+
 
 // load data by geo/sex/cause
 	function download_data(geo, sex, cause) {
@@ -57,11 +69,18 @@
 			dataType: 	'json',
 			async: 		false,
 			success:	function(json) {
-				json.map(function(d) {
-					if (typeof data[d.geo][sex][cause] == 'undefined') data[d.geo][sex][cause] = [];
-					data[d.geo][sex][cause].push(d);
-					if (geo.substr(0,2) == 'R_' && loaded_data[d.geo + '_' + sex + '_' + cause] != 1) loaded_data[d.geo + '_' + sex + '_' + cause] = 1;
-				});
+				if (geo.substr(0,2) == 'R_') {
+					json.map(function(d) {
+						if (typeof data[d.geo] == 'undefined') {
+							data[d.geo] = {};
+							data[d.geo][sex] = {};
+						}
+						if (typeof data[d.geo][sex][cause] == 'undefined') data[d.geo][sex][cause] = [];
+						data[d.geo][sex][cause].push(d);
+						if (geo.substr(0,2) == 'R_' && loaded_data[d.geo + '_' + sex + '_' + cause] != 1) loaded_data[d.geo + '_' + sex + '_' + cause] = 1;
+					});
+				}
+				else data[geo][sex][cause] = json;
 				loaded_data[geo + '_' + sex + '_' + cause] = 1;
 			}
 		});		

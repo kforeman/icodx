@@ -314,3 +314,26 @@
 		settings['model'] = val;
 		update_chart();
 	}
+
+// bug report button
+	menu_panel.append('div')
+		.style('top', '500px')
+		.style('position', 'absolute')
+		.style('width', '220px')
+  	  .append('center')
+	  	.attr('onclick', 'bug_email()')
+  		.attr('class', 'bug_report')
+	  	.text('Submit Bug Report');
+	function bug_email() {
+		var mailto = "mailto:kfor@uw.edu?subject=icodx Bug Report&body=Dear Kyle,%0A%0AI have angered the benevolent icodx gods in the following ways:%0A[Describe the bug you've encountered here]%0A%0A[Insert screenshot here]%0A%0ACurrent settings:%0A" + JSON.stringify(sort_keys(settings), null, '%0A');
+		win = window.open(mailto, 'emailWindow');
+		if (win && win.open &&!win.closed) win.close();
+	}
+	function sort_keys(o) {
+ 		var sorted = {},
+    		key, a = [];
+	    for (key in o) if (o.hasOwnProperty(key)) a.push(key);
+	    a.sort();
+	    for (key = 0; key < a.length; key++) sorted[a[key]] = o[a[key]];
+    	return sorted;
+	}
