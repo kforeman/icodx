@@ -51,7 +51,7 @@
 		
 		// return the requested data
 			if (typeof tmp == 'undefined') return [];
-			else return tmp.filter(function(d) { return d.year >= start_year; });
+			else return tmp;
 	}
 	
 
@@ -76,11 +76,13 @@
 							data[d.geo][sex] = {};
 						}
 						if (typeof data[d.geo][sex][cause] == 'undefined') data[d.geo][sex][cause] = [];
-						data[d.geo][sex][cause].push(d);
+						if (d.year >= start_year) data[d.geo][sex][cause].push(d);
 						if (geo.substr(0,2) == 'R_' && loaded_data[d.geo + '_' + sex + '_' + cause] != 1) loaded_data[d.geo + '_' + sex + '_' + cause] = 1;
 					});
 				}
-				else data[geo][sex][cause] = json;
+				else data[geo][sex][cause] = json.filter(function(d) {
+					 return d.year >= start_year;
+				});
 				loaded_data[geo + '_' + sex + '_' + cause] = 1;
 			}
 		});		
