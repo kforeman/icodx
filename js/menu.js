@@ -44,20 +44,6 @@
 			{ id:	'unit',		name:	'Units',	type:	'radio' },
 			{ id:	'xaxis',	name:	'X-axis',	type:	'radio' }
 		];
-		
-		
-		
-		
-		settings = {
-			geo: 	'ARM',
-			cause:	'A01',
-			sex:	1,
-			unit:	'rate',
-			xaxis:	'time',
-			data:	'corr',
-			model:	'none'
-		}
-		
 
 // fill in the main menu
 	var menu_font_size = 14,
@@ -278,34 +264,70 @@
 
 // function to update the list of models
 	function refresh_model_list() {
-		$.ajax({
-			url: 'php/model_list.php?sex=' + settings['sex'] + '&cause=' + settings['cause'].replace(/_/g, '.'),
-			dataType: 'json',
-			async: false,
-			success: function(json) {
-			// remove the old menu options
-				d3.selectAll('.model_option').remove();
-			// add new model options to the menu
-				if (json != 'failure') model_select.selectAll()
-		  			.data(json)
-	  	  		  .enter().append('option')
-	  	  		  	.attr('class', 'model_option')
-	  	  			.attr('id', function(d) { return 'model_option_' + d.model_number; })
-	  	  			.attr('value', function(d) { return d.model_number + '_' + d.corrected; })
-	  	  			.text(function(d) { 
-	  	  				var dt = new Date(Date.parse(d.upload_time)).toDateString().substr(4);
-	  	  				return d.model_name + '   [' + dt + ']'; 
-	  	  			})
-	  	  			.style('line-height', '13px');
-	  	  	// select the corrected model
-	  	  		var dd = json.filter(function(d) { return d.corrected == 1; })[0],
-	  	  			dflt = (typeof dd != 'undefined' ? json.filter(function(d) { return d.corrected == 1; })[0].model_number : 'none');
-	  	  		$('#model_option_' + dflt)[0].selected = true;
-	  	  		settings['model'] = dflt + '_1';
-			// trigger the update of the select
-				$('#model_select').trigger('liszt:updated');
-			}
-		});	
+		if (use_mysql) {
+			$.ajax({
+				url: 'php/model_list.php?sex=' + settings['sex'] + '&cause=' + settings['cause'].replace(/_/g, '.'),
+				dataType: 'json',
+				async: false,
+				success: function(json) {
+				// remove the old menu options
+					d3.selectAll('.model_option').remove();
+				// add new model options to the menu
+					if (json != 'failure') model_select.selectAll()
+			  			.data(json)
+		  	  		  .enter().append('option')
+		  	  		  	.attr('class', 'model_option')
+		  	  			.attr('id', function(d) { return 'model_option_' + d.model_number; })
+		  	  			.attr('value', function(d) { return d.model_number + '_' + d.corrected; })
+		  	  			.text(function(d) { 
+		  	  				var dt = new Date(Date.parse(d.upload_time)).toDateString().substr(4);
+		  	  				return d.model_name + '   [' + dt + ']'; 
+		  	  			})
+		  	  			.style('line-height', '13px');
+		  	  	// select the corrected model
+		  	  		var dd = json.filter(function(d) { return d.corrected == 1; })[0],
+		  	  			dflt = (typeof dd != 'undefined' ? json.filter(function(d) { return d.corrected == 1; })[0].model_number : 'none');
+		  	  		$('#model_option_' + dflt)[0].selected = true;
+		  	  		settings['model'] = dflt + '_1';
+				// trigger the update of the select
+					$('#model_select').trigger('liszt:updated');
+				}
+			});
+		}
+		else {
+			$.ajax({
+				url: 'data/models/' + settings['cause'].replace(/_/g, '.') + '/' + settings['sex'] + '/model_list.csv',
+				dataType: 'text',
+				async: false,
+				success: function(csv) {
+					csv = d3.csv.parse(csv);
+				// remove the old menu options
+					d3.selectAll('.model_option').remove();
+				// add new model options to the menu
+					model_select.selectAll()
+			  			.data(csv)
+		  	  		  .enter().append('option')
+		  	  		  	.attr('class', 'model_option')
+		  	  			.attr('id', function(d) { return 'model_option_' + d.model_number; })
+		  	  			.attr('value', function(d) { return d.model_number + '_' + d.corrected; })
+		  	  			.text(function(d) { 
+		  	  				var dt = new Date(Date.parse(d.upload_time)).toDateString().substr(4);
+		  	  				return d.model_name + '   [' + dt + ']'; 
+		  	  			})
+		  	  			.style('line-height', '13px');
+		  	  	// select the corrected model
+		  	  		var dd = csv.filter(function(d) { return d.corrected == 1; })[0],
+		  	  			dflt = (typeof dd != 'undefined' ? csv.filter(function(d) { return d.corrected == 1; })[0].model_number : 'none');
+		  	  		$('#model_option_' + dflt)[0].selected = true;
+		  	  		settings['model'] = dflt + '_1';
+				// trigger the update of the select
+					$('#model_select').trigger('liszt:updated');
+				},
+				failure:	function() {
+					d3.selectAll('.model_option').remove();
+				}
+			});
+		}
 	}
 	refresh_model_list();
 
@@ -316,24 +338,26 @@
 	}
 
 // bug report button
-	menu_panel.append('div')
-		.style('top', '500px')
-		.style('position', 'absolute')
-		.style('width', '220px')
-  	  .append('center')
-	  	.attr('onclick', 'bug_email()')
-  		.attr('class', 'bug_report')
-	  	.text('Submit Bug Report');
-	function bug_email() {
-		var mailto = "mailto:kfor@uw.edu?subject=icodx Bug Report&body=Dear Kyle,%0A%0AI have angered the benevolent icodx gods in the following ways:%0A[Describe the bug you've encountered here]%0A%0A[Insert screenshot here]%0A%0ACurrent settings:%0A" + JSON.stringify(sort_keys(settings), null, '%0A');
-		win = window.open(mailto, 'emailWindow');
-		if (win && win.open &&!win.closed) win.close();
-	}
-	function sort_keys(o) {
- 		var sorted = {},
-    		key, a = [];
-	    for (key in o) if (o.hasOwnProperty(key)) a.push(key);
-	    a.sort();
-	    for (key = 0; key < a.length; key++) sorted[a[key]] = o[a[key]];
-    	return sorted;
+	if (use_mysql) {
+		menu_panel.append('div')
+			.style('top', '500px')
+			.style('position', 'absolute')
+			.style('width', '220px')
+	  	  .append('center')
+		  	.attr('onclick', 'bug_email()')
+	  		.attr('class', 'bug_report')
+		  	.text('Submit Bug Report');
+		function bug_email() {
+			var mailto = "mailto:kfor@uw.edu?subject=icodx Bug Report&body=Dear Kyle,%0A%0AI have angered the benevolent icodx gods in the following ways:%0A[Describe the bug you've encountered here]%0A%0A[Insert screenshot here]%0A%0ACurrent settings:%0A" + JSON.stringify(sort_keys(settings), null, '%0A');
+			win = window.open(mailto, 'emailWindow');
+			if (win && win.open &&!win.closed) win.close();
+		}
+		function sort_keys(o) {
+	 		var sorted = {},
+	    		key, a = [];
+		    for (key in o) if (o.hasOwnProperty(key)) a.push(key);
+		    a.sort();
+		    for (key = 0; key < a.length; key++) sorted[a[key]] = o[a[key]];
+	    	return sorted;
+		}
 	}

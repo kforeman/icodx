@@ -23,6 +23,9 @@
 		output += '<tr><td><b>Rate:</b></td><td>' + format_rate(find_value(d, 'corr', 'rate')) + '</td></tr>';		
 		output += '<tr><td><b>Total Mortality:&nbsp;</b></td><td>' + format_num(d.env) + '</td></tr>';
 		output += '<tr><td><b>Population:</b></td><td>' + format_num(d.pop) + '</td></tr>';
+		if (typeof outliers[d.obs_id + '_' + settings['cause']] != 'undefined') {
+			if (outliers[d.obs_id + '_' + settings['cause']].outlier == 1) output += '<tr><td><b>Outlier:</b></td><td>' + d.reason + ' (' + d.name + ')</td></tr>';
+		}
 		output += '</table>';
 		return output;
 	}

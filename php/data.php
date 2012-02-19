@@ -14,8 +14,7 @@
 
 	// perform the query
 	$rows = array();
-	if (substr($_GET['geo'], 0, 2) == 'R_') $result = mysql_query('SELECT iso3 AS geo,year,age,obs_id,source_id,sample_size,cf,cf_raw FROM icod_data LEFT JOIN id_countries USING (iso3) WHERE cause="'.$_GET['cause'].'" AND sex='.$_GET['sex'].' AND region='.substr($_GET['geo'], 2).';');
-	else $result = mysql_query('SELECT iso3 AS geo,year,age,obs_id,source_id,sample_size,cf,cf_raw FROM icod_data WHERE cause="'.$_GET['cause'].'" AND sex='.$_GET['sex'].' AND iso3="'.$_GET['geo'].'";');
+	$result = mysql_query('SELECT iso3 AS geo,year,age,obs_id,source_id,sample_size,cf,cf_raw FROM icod_data WHERE cause="'.$_GET['cause'].'" AND sex='.$_GET['sex'].' AND iso3="'.$_GET['geo'].'";');
 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
     	$rows[] = $row;
 		

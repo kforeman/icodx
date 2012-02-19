@@ -14,8 +14,7 @@
 
 	// perform the query
 	$rows = array();
-	if (substr($_GET['geo'], 0, 2) == 'R_') $result = mysql_query('SELECT iso3,source_id,source,source_type,source_label,icd_vers,national FROM icod_meta LEFT JOIN id_countries USING (iso3) WHERE region='.substr($_GET['geo'], 2).';');
-	else $result = mysql_query('SELECT iso3,source_id,source,source_type,source_label,icd_vers,national FROM icod_meta WHERE iso3="'.$_GET['geo'].'";');
+	$result = mysql_query('SELECT iso3,source_id,source,source_type,source_label,icd_vers,national FROM icod_meta WHERE iso3="'.$_GET['geo'].'";');
 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
     	$rows[] = $row;
 		

@@ -280,13 +280,15 @@
 					if (max < .1) max = .1;	
 				}
 			// if there's modeled data for this set of years, also check that for a higher max
-				if (my.indexOf(s.sd + (s.sd == 2010 ? 1 : 2)) > -1) {
-					var mdat = [];
-					ma.map(function(a) {
-						mdat.push(find_model_estimates(a, s.sd + (s.sd == 2010 ? 1 : 2)).u)
-					});
-					var mmax = d3.max(mdat);
-					max = d3.max([max, mmax]);
+				if (settings['model'] != 'none') {
+					if (my.indexOf(s.sd + (s.sd == 2010 ? 1 : 2)) > -1) {
+						var mdat = [];
+						ma.map(function(a) {
+							mdat.push(find_model_estimates(a, s.sd + (s.sd == 2010 ? 1 : 2)).u)
+						});
+						var mmax = d3.max(mdat);
+						max = d3.max([max, mmax]);
+					}
 				}
 			// update the scales
 				y_scales[s.sd].domain([0, max]).nice();
@@ -312,13 +314,15 @@
 					if (max < .1) max = .1;	
 				}
 			// if there's modeled data for this age, also check that for a higher max
-				if (ma.indexOf(a.age) > -1) {
-					var mdat = [];
-					my.map(function(y) {
-						mdat.push(find_model_estimates(a.age, y).u)
-					});
-					var mmax = d3.max(mdat);
-					max = d3.max([max, mmax]);
+				if (settings['model'] != 'none') {
+					if (ma.indexOf(a.age) > -1) {
+						var mdat = [];
+						my.map(function(y) {
+							mdat.push(find_model_estimates(a.age, y).u)
+						});
+						var mmax = d3.max(mdat);
+						max = d3.max([max, mmax]);
+					}
 				}
 			// update the scales
 				y_scales[a.age].domain([0, max]).nice();
@@ -528,6 +532,9 @@
 	    			return tooltip(d);
 	    		})
 	    		.transition().duration(1000)
+				.attr('d', function(d) {
+			    	return find_shape(d.source_id, d.obs_id);
+			    })
 				.attr('transform', function(d) {
 	    			return 'translate(' + find_x(parseInt(d.year), parseFloat(d.age)) + ',' + find_y(find_value(d), parseInt(d.year), parseFloat(d.age)) + ')' + (typeof outliers[d.obs_id + '_' + settings['cause']] != 'undefined' ? (outliers[d.obs_id + '_' + settings['cause']].outlier == 1 ? 'rotate(45)' : '') : '');
 			    })
@@ -555,83 +562,83 @@
 		
 		// update the time series model results
 			if (settings['xaxis'] == 'time') {
-				m_ts_area = m_ts_area.data(ma, function(a) { return a; })
+				m_ts_area = m_ts_area.data(settings['model'] == 'none' ? [] : ma, function(a) { return a; })
 				m_ts_area.enter().append('path')
-		  	  		.attr('d', function(d) {
-		  	  			return m_ts_area_gen(d, my);
-		  	  		})
-	  	  			.style('stroke', 'none')
-	  	  			.style('fill-opacity', 1)
-	  	  			.style('fill', d3.rgb(178, 226, 226));
-	  	  		m_ts_area.transition().duration(1000)
-	  	  			.attr('d', function(d) {
-		  	  			return m_ts_area_gen(d, my);
-		  	  		})
-		  	  		.style('fill-opacity', 1);
-		  	  	m_ts_area.exit().transition().duration(1000)
-		  	  		.style('fill-opacity', 1e-6)
-		  	  		.remove();
-				m_ts_line = m_ts_line.data(ma, function(a) { return a; })
-	  	  		m_ts_line.enter().append('path')
-			  	  	.attr('d', function(d) {
-			  	  		return m_ts_line_gen(d, my);
-			  	  	})
-			  	  	.style('stroke', d3.rgb(44, 162, 95))
-			  	  	.style('stroke-width', '2')
-			  	  	.style('stroke-opacity', 1)
-			  	  	.style('fill', 'none');
-			  	m_ts_line.transition().duration(1000)
-			  		.attr('d', function(d) {
-			  	  		return m_ts_line_gen(d, my);
-			  	  	})
-			  	  	.style('stroke-opacity', 1);
-			  	m_ts_line.exit().transition().duration(1000)
-			  		.style('stroke-opacity', 1e-6)
-			  		.remove();			
+					.attr('d', function(d) {
+						return m_ts_area_gen(d, my);
+					})
+					.style('stroke', 'none')
+					.style('fill-opacity', 1)
+					.style('fill', d3.rgb(178, 226, 226));
+				m_ts_area.transition().duration(1000)
+					.attr('d', function(d) {
+						return m_ts_area_gen(d, my);
+					})
+					.style('fill-opacity', 1);
+				m_ts_area.exit().transition().duration(1000)
+					.style('fill-opacity', 1e-6)
+					.remove();
+				m_ts_line = m_ts_line.data(settings['model'] == 'none' ? [] : ma, function(a) { return a; })
+				m_ts_line.enter().append('path')
+					.attr('d', function(d) {
+						return m_ts_line_gen(d, my);
+					})
+					.style('stroke', d3.rgb(44, 162, 95))
+					.style('stroke-width', '2')
+					.style('stroke-opacity', 1)
+					.style('fill', 'none');
+				m_ts_line.transition().duration(1000)
+					.attr('d', function(d) {
+						return m_ts_line_gen(d, my);
+					})
+					.style('stroke-opacity', 1);
+				m_ts_line.exit().transition().duration(1000)
+					.style('stroke-opacity', 1e-6)
+					.remove();			
 			}
 			else {
 				m_ts_area.transition().duration(500).style('fill-opacity', 1e-6);
 				m_ts_line.transition().duration(500).style('stroke-opacity', 1e-6);
 			}
-			
+				
 		// update the age pattern model results
 			if (settings['xaxis'] == 'age') {
-				m_ap_area = m_ap_area.data(my.filter(function(y) { return (y % 5) == 0 }), function(y) { return y; })
+				m_ap_area = m_ap_area.data(settings['model'] == 'none' ? [] : my.filter(function(y) { return (y % 5) == 0 }), function(y) { return y; })
 				m_ap_area.enter().append('path')
-		  	  		.attr('d', function(d) {
-		  	  			return m_ap_area_gen(d, ma);
-		  	  		})
-	  	  			.style('stroke', 'none')
-	  	  			.style('fill-opacity', 1)
-	  	  			.style('fill', d3.rgb(178, 226, 226));
-	  	  		m_ap_area.transition().duration(1000)
-	  	  			.attr('d', function(d) {
-		  	  			return m_ap_area_gen(d, ma);
-		  	  		})
-		  	  		.style('fill-opacity', 1);
-		  	  	m_ap_area.exit().transition().duration(1000)
-		  	  		.style('fill-opacity', 1e-6)
-		  	  		.remove();
-				m_ap_line = m_ap_line.data(my.filter(function(y) { return (y % 5) == 0 }), function(y) { return y; })
-	  	  		m_ap_line.enter().append('path')
-			  	  	.attr('d', function(d) {
-			  	  		return m_ap_line_gen(d, ma);
-			  	  	})
-			  	  	.style('stroke', d3.rgb(44, 162, 95))
-			  	  	.style('stroke-width', '2')
-			  	  	.style('stroke-opacity', 1)
-			  	  	.style('fill', 'none');
-			  	m_ap_line.transition().duration(1000)
-			  		.attr('d', function(d) {
-			  	  		return m_ap_line_gen(d, ma);
-			  	  	})
-			  	  	.style('stroke-opacity', 1);
-			  	m_ap_line.exit().transition().duration(1000)
-			  		.style('stroke-opacity', 1e-6)
-			  		.remove();			
+					.attr('d', function(d) {
+						return m_ap_area_gen(d, ma);
+					})
+					.style('stroke', 'none')
+					.style('fill-opacity', 1)
+					.style('fill', d3.rgb(178, 226, 226));
+				m_ap_area.transition().duration(1000)
+					.attr('d', function(d) {
+						return m_ap_area_gen(d, ma);
+					})
+					.style('fill-opacity', 1);
+				m_ap_area.exit().transition().duration(1000)
+					.style('fill-opacity', 1e-6)
+					.remove();
+				m_ap_line = m_ap_line.data(settings['model'] == 'none' ? [] : my.filter(function(y) { return (y % 5) == 0 }), function(y) { return y; })
+				m_ap_line.enter().append('path')
+					.attr('d', function(d) {
+						return m_ap_line_gen(d, ma);
+					})
+					.style('stroke', d3.rgb(44, 162, 95))
+					.style('stroke-width', '2')
+					.style('stroke-opacity', 1)
+					.style('fill', 'none');
+				m_ap_line.transition().duration(1000)
+					.attr('d', function(d) {
+						return m_ap_line_gen(d, ma);
+					})
+					.style('stroke-opacity', 1);
+				m_ap_line.exit().transition().duration(1000)
+					.style('stroke-opacity', 1e-6)
+					.remove();			
 			}
 			else {
 				m_ap_area.transition().duration(500).style('fill-opacity', 1e-6);
 				m_ap_line.transition().duration(500).style('stroke-opacity', 1e-6);
-			}			
+			}
 	}

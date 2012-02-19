@@ -55,37 +55,83 @@
 	}
 	
 
-
-// ----------- NOTE: instead of the json.map() below for regions, let's implement a loop through the countries, doing separate AJAX requests for each (instead of requesting them all at once and then going through the trouble of parsing everything) ------------ //
-
-
-
-
-
 // load data by geo/sex/cause
 	function download_data(geo, sex, cause) {
-		$.ajax({
-			url: 		'php/data.php?geo=' + geo + '&sex=' + sex + '&cause=' + cause.replace(/_/g, '.'),
-			dataType: 	'json',
-			async: 		false,
-			success:	function(json) {
-				if (geo.substr(0,2) == 'R_') {
-					json.map(function(d) {
-						if (typeof data[d.geo] == 'undefined') {
-							data[d.geo] = {};
-							data[d.geo][sex] = {};
-						}
-						if (typeof data[d.geo][sex][cause] == 'undefined') data[d.geo][sex][cause] = [];
-						if (d.year >= start_year) data[d.geo][sex][cause].push(d);
-						if (geo.substr(0,2) == 'R_' && loaded_data[d.geo + '_' + sex + '_' + cause] != 1) loaded_data[d.geo + '_' + sex + '_' + cause] = 1;
-					});
-				}
-				else data[geo][sex][cause] = json.filter(function(d) {
-					 return d.year >= start_year;
+		if (use_mysql) {
+			if (geo.substr(0,2) == 'R_') {
+				var isos = regions[geo.substr(2)];
+				isos.map(function(i) {
+					if (loaded_data[i + '_' + sex + '_' + cause] != 1) {
+						$.ajax({
+							url: 		'php/data.php?geo=' + i + '&sex=' + sex + '&cause=' + cause.replace(/_/g, '.'),
+							dataType: 	'json',
+							async: 		false,
+							success:	function(json) {
+								data[i][sex][cause] = json.filter(function(d) {
+						 			return d.year >= start_year;
+								});
+								loaded_data[i + '_' + sex + '_' + cause] = 1;
+							}
+						});			
+					}
 				});
 				loaded_data[geo + '_' + sex + '_' + cause] = 1;
 			}
-		});		
+			else {
+				$.ajax({
+					url:		'php/data.php?geo=' + geo + '&sex=' + sex + '&cause=' + cause.replace(/_/g, '.'),
+					dataType:	'json',
+					async:		false,
+					success:	function(json) {
+						data[geo][sex][cause] = json.filter(function(d) {
+							return d.year >= start_year;
+						});
+						loaded_data[geo + '_' + sex + '_' + cause] = 1;
+					}
+				});
+			}			
+		}
+		else {
+			if (geo.substr(0,2) == 'R_') {
+				var isos = regions[geo.substr(2)];
+				isos.map(function(i) {
+					if (loaded_data[i + '_' + sex + '_' + cause] != 1) {
+						$.ajax({
+							url:	'data/data/' + cause.replace(/_/g, '.') + '/' + sex + '/data_' + i + '.csv',
+							dataType: 'text',
+							async: 	false,
+							success: function(csv) {
+								data[i][sex][cause] = d3.csv.parse(csv).filter(function(d) {
+									return d.year >= start_year;
+								});
+								loaded_data[i + '_' + sex + '_' + cause] = 1;
+							},
+							error: function() {
+								data[i][sex][cause] = [];
+								loaded_data[i + '_' + sex + '_' + cause] = 1;
+							}
+						});	
+					}
+				});
+			}
+			else {
+				$.ajax({
+					url:	'data/data/' + cause.replace(/_/g, '.') + '/' + sex + '/data_' + geo + '.csv',
+					dataType:	'text',
+					async:		false,
+					success:	function(csv) {
+						data[geo][sex][cause] = d3.csv.parse(csv).filter(function(d) {
+							return d.year >= start_year;
+						});
+						loaded_data[geo + '_' + sex + '_' + cause] = 1;
+					},
+					error: function() {
+						data[geo][sex][cause] = [];
+						loaded_data[geo + '_' + sex + '_' + cause] = 1;
+					}
+				});
+			}
+		}
 	}
 
 // retrieve meta data for a given study
@@ -100,17 +146,80 @@
 
 // download meta data for a given country
 	function download_meta_data(geo) {
-		$.ajax({
-			url: 		'php/meta_data.php?geo=' + geo,
-			dataType: 	'json',
-			async: 		false,
-			success: 	function(json) {
-				json.map(function(d) {
-					meta_data[d.source_id] = d;
+		if (use_mysql) {
+			if (geo.substr(0,2) == 'R_') {
+				var isos = regions[geo.substr(2)];
+				isos.map(function(i) {
+					if (loaded_meta_data[i] != 1) {
+						$.ajax({
+							url: 		'php/meta_data.php?geo=' + i,
+							dataType: 	'json',
+							async: 		false,
+							success: 	function(json) {
+								json.map(function(d) {
+									meta_data[d.source_id] = d;
+								});
+								loaded_meta_data[i] = 1;
+							}
+						});					
+						loaded_meta_data[geo] = 1;
+					}
 				});
-				loaded_meta_data[geo] = 1;
 			}
-		});
+			else {
+				$.ajax({
+					url:		'php/meta_data.php?geo=' + geo,
+					dataType:	'json',
+					async: 		false,
+					success:	function(json) {
+						json.map(function(d) {
+							meta_data[d.source_id] = d;
+						});
+						loaded_meta_data[geo] = 1;
+					}
+				});
+			}
+		}
+		else {
+			if (geo.substr(0,2) == 'R_') {
+				var isos = regions[geo.substr(2)];
+				isos.map(function(i) {
+					if (loaded_meta_data[i] != 1) {
+						$.ajax({
+							url: 		'data/meta_data/meta_data_' + i + '.csv',
+							dataType: 	'text',
+							async: 		false,
+							success: 	function(csv) {
+								d3.csv.parse(csv).map(function(d) {
+									meta_data[d.source_id] = d;
+								});
+								loaded_meta_data[i] = 1;
+							},
+							error: function() {
+								loaded_meta_data[i] = 1;
+							}
+						});					
+						loaded_meta_data[geo] = 1;
+					}
+				});
+			}
+			else {
+				$.ajax({
+					url:		'data/meta_data/meta_data_' + geo + '.csv',
+					dataType:	'text',
+					async: 		false,
+					success:	function(csv) {
+						d3.csv.parse(csv).map(function(d) {
+							meta_data[d.source_id] = d;
+						});
+						loaded_meta_data[geo] = 1;
+					},
+					error: function() {
+						loaded_meta_data[geo] = 1;
+					}
+				});
+			}
+		}
 	}
 
 // retrieve population/envelope for a given country/sex/age/year
@@ -125,17 +234,35 @@
 
 // download population/envelope data for a country/sex
 	function download_pop_env_data(geo, sex) {
-		$.ajax({
-			url: 		'php/pop_env.php?geo=' + geo + '&sex=' + sex,
-			dataType: 	'json',
-			async: 		false,
-			success: 	function(json) {
-				json.map(function(d) {
-					if (typeof pop_env_data[d.geo][sex][d.year] != 'undefined') pop_env_data[d.geo][sex][d.year][d.age] = { pop: parseInt(d.pop), env: parseFloat(d.envelope), env_corr: parseFloat(d.env_corr) };
-					if (loaded_pop_env_data[d.geo + '_' + sex] != 1) loaded_pop_env_data[d.geo + '_' + sex] = 1;
-				});
-			}
-		});
+		if (use_mysql) {
+			$.ajax({
+				url: 		'php/pop_env.php?geo=' + geo + '&sex=' + sex,
+				dataType: 	'json',
+				async: 		false,
+				success: 	function(json) {
+					json.map(function(d) {
+						if (typeof pop_env_data[d.geo][sex][d.year] != 'undefined') pop_env_data[d.geo][sex][d.year][d.age] = { pop: parseInt(d.pop), env: parseFloat(d.envelope), env_corr: parseFloat(d.env_corr) };
+					});
+					loaded_pop_env_data[geo + '_' + sex] = 1;
+				}
+			});		
+		}
+		else {
+			$.ajax({
+				url: 		'data/pop_env/' + geo + '/' + sex + '/pop_env.csv',
+				dataType: 	'text',
+				async: 		false,
+				success: 	function(csv) {
+					d3.csv.parse(csv).map(function(d) {
+						if (typeof pop_env_data[d.geo][sex][d.year] != 'undefined') pop_env_data[d.geo][sex][d.year][parseFloat(d.age)] = { pop: parseInt(d.pop), env: parseFloat(d.envelope), env_corr: parseFloat(d.env_corr) };
+					});
+					loaded_pop_env_data[geo + '_' + sex] = 1;
+				},
+				error: function() {
+					loaded_pop_env_data[geo + '_' + sex] = 1;
+				}
+			});
+		}
 	}
 
 // method to find unique values of an array
@@ -158,28 +285,62 @@
 
 // download model results
 	function download_model_results(model_number, corrected, geo) {
-		$.ajax({
-			url:		'php/model_results.php?geo=' + geo + '&model_number=' + model_number + '&corrected=' + corrected,
-			dataType:	'json',
-			async:		false,
-			success: 	function(json) {
-				model_results[geo][model_number + '_' + corrected] = {};
-				var age_tmp = [],
-					year_tmp = [];
-				json.map(function(d) {
-					// make an object in which to hold this data if it hasn't been created already
-						if (typeof model_results[geo][model_number + '_' + corrected][d.year] == 'undefined') model_results[geo][model_number + '_' + corrected][d.year] = {};
-					// save the results
-						model_results[geo][model_number + '_' + corrected][d.year][d.age] = { mean: parseFloat(d.mean), upper: parseFloat(d.upper), lower: parseFloat(d.lower) };
-					// add to the list of which ages/years are available for this cause (exclude ages which only exist for 1990/2005/2010, because they're an artifact of how Mike or Tommy or whomever squares up the dataset)
-						if (d.year != 1990 && d.year != 2005 && d.year != 2010) age_tmp.push(parseFloat(d.age));
-						year_tmp.push(parseInt(d.year));
-				});
-				// mark this data as loaded
+		if (use_mysql) {
+			$.ajax({
+				url:		'php/model_results.php?geo=' + geo + '&model_number=' + model_number + '&corrected=' + corrected,
+				dataType:	'json',
+				async:		false,
+				success: 	function(json) {
+					model_results[geo][model_number + '_' + corrected] = {};
+					var age_tmp = [],
+						year_tmp = [];
+					json.map(function(d) {
+						// make an object in which to hold this data if it hasn't been created already
+							if (typeof model_results[geo][model_number + '_' + corrected][d.year] == 'undefined') model_results[geo][model_number + '_' + corrected][d.year] = {};
+						// save the results
+							model_results[geo][model_number + '_' + corrected][d.year][d.age] = { mean: parseFloat(d.mean), upper: parseFloat(d.upper), lower: parseFloat(d.lower) };
+						// add to the list of which ages/years are available for this cause (exclude ages which only exist for 1990/2005/2010, because they're an artifact of how Mike or Tommy or whomever squares up the dataset)
+							if (d.year != 1990 && d.year != 2005 && d.year != 2010) age_tmp.push(parseFloat(d.age));
+							year_tmp.push(parseInt(d.year));
+					});
+					// mark this data as loaded
+						loaded_model_results[geo + '_' + model_number + '_' + corrected] = 1;
+					// list the ages/years available for this model
+						model_ages[model_number + '_' + corrected] = age_tmp.getUnique().sort(function(a,b) { return a-b; });
+						model_years[model_number + '_' + corrected] = year_tmp.getUnique().sort(function(a,b) { return a-b; });
+				}
+			});
+		}
+		else {
+			$.ajax({
+				url:		'data/models/' + settings['cause'].replace(/_/g, '.') + '/' + settings['sex'] + '/results_' + model_number + '_' + geo + '.csv',
+				dataType:	'text',
+				async:		false,
+				success: 	function(csv) {
+					model_results[geo][model_number + '_' + corrected] = {};
+					var age_tmp = [],
+						year_tmp = [];
+					d3.csv.parse(csv).map(function(d) {
+						// make an object in which to hold this data if it hasn't been created already
+							if (typeof model_results[geo][model_number + '_' + corrected][d.year] == 'undefined') model_results[geo][model_number + '_' + corrected][d.year] = {};
+						// save the results
+							model_results[geo][model_number + '_' + corrected][d.year][parseFloat(d.age)] = { mean: parseFloat(d.mean), upper: parseFloat(d.upper), lower: parseFloat(d.lower) };
+						// add to the list of which ages/years are available for this cause (exclude ages which only exist for 1990/2005/2010, because they're an artifact of how Mike or Tommy or whomever squares up the dataset)
+							if (d.year != 1990 && d.year != 2005 && d.year != 2010) age_tmp.push(parseFloat(d.age));
+							year_tmp.push(parseInt(d.year));
+					});
+					// mark this data as loaded
+						loaded_model_results[geo + '_' + model_number + '_' + corrected] = 1;
+					// list the ages/years available for this model
+						model_ages[model_number + '_' + corrected] = age_tmp.getUnique().sort(function(a,b) { return a-b; });
+						model_years[model_number + '_' + corrected] = year_tmp.getUnique().sort(function(a,b) { return a-b; });
+				},
+				error:	function(csv) {
+					console.log(model_number)
 					loaded_model_results[geo + '_' + model_number + '_' + corrected] = 1;
-				// list the ages/years available for this model
-					model_ages[model_number + '_' + corrected] = age_tmp.getUnique().sort(function(a,b) { return a-b; });
-					model_years[model_number + '_' + corrected] = year_tmp.getUnique().sort(function(a,b) { return a-b; });
-			}
-		});
+					model_ages[model_number + '_' + corrected] = [];
+					model_years[model_number + '_' + corrected] = [];
+				}
+			});
+		}
 	}
