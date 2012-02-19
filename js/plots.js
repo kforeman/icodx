@@ -481,6 +481,9 @@
 
 // update the chart with new data
 	function update_chart() {
+		// remove tooltips
+			$('.dot').poshytip('destroy');
+
 		// update the data
 			plotme = retrieve_cause_fractions(settings['geo'], settings['sex'], settings['cause']);
 			plotme.map(function(d,i) {
@@ -520,14 +523,15 @@
 	    			return tooltip(d);
 	    		});
 		// move existing points
-			dots.transition().duration(1000)
+			dots
+				.attr('title', function(d) {
+	    			return tooltip(d);
+	    		})
+	    		.transition().duration(1000)
 				.attr('transform', function(d) {
 	    			return 'translate(' + find_x(parseInt(d.year), parseFloat(d.age)) + ',' + find_y(find_value(d), parseInt(d.year), parseFloat(d.age)) + ')' + (typeof outliers[d.obs_id + '_' + settings['cause']] != 'undefined' ? (outliers[d.obs_id + '_' + settings['cause']].outlier == 1 ? 'rotate(45)' : '') : '');
 			    })
 			    .style('stroke-opacity', 1)
-			    .attr('title', function(d) {
-	    			return tooltip(d);
-	    		})
 			  .transition().delay(1000)
 			  	.style('visibility', function(d) {
 			  		return isNaN(find_value(d)) ? 'hidden' : 'visible';
@@ -537,7 +541,6 @@
 				.style('stroke-opacity', 1e-6)
 				.remove();
 		// update tooltips
-			$('.dot').poshytip('destroy');
 			$('.dot').poshytip({
 				slide: false,
 				fade: false,

@@ -10,7 +10,7 @@
 		var output = '<tr><td><b>Country:</b></td><td>' + country_lookup[d.geo] + '</td></tr>';
 		output += '<tr><td><b>Year:</b></td><td>' + d.year + '</td></tr>';		
 		output += '<tr><td><b>Age:</b></td><td>' + age_lookup[d.age] + '</td></tr>';		
-		output += '<tr><td><b>Sex:</b></td><td>' + (settings['sex'] == 1 ? 'Male' : 'Female') + '</td></tr>';		
+		output += '<tr><td><b>Sex:</b></td><td>' + (settings['sex'] == '1' ? 'Male' : 'Female') + '</td></tr>';		
 		output += '<tr><td><b>Type:</b></td><td>' + md.source_type + '</td></tr>';		
 		output += '<tr><td><b>Source:</b></td><td>' + md.source_label + '</td></tr>';		
 		output += '<tr><td><b>File:</b></td><td>' + md.source + '</td></tr>';		
@@ -28,18 +28,18 @@
 	}
 
 // format numbers
-	function format_num(d) {
-		if (isNaN(d)) return 'Missing';
-		else return d3.format(',.0f')(d);	
+	function format_num(n) {
+		if (isNaN(n)) return 'Missing';
+		else return d3.format(',.0f')(n);	
 	} 
-	function format_cf(d) {
-		if (isNaN(d)) return 'Missing';
-		else return d3.format(',.2%')(d);	
+	function format_cf(n) {
+		if (isNaN(n)) return 'Missing';
+		else return d3.format('.2%')(n);	
 	} 
-	function format_rate(d) {
-		if (isNaN(d)) return 'Missing';
-		else if (d <= .5) return d3.format('.2f')(d);
-		else if (d < 5) return d3.format('.1f')(d);
-		else return d3.format('.0f')(d);;
+	function format_rate(n) {
+		if (isNaN(n)) return 'Missing';
+		else if (n <= .5) return d3.format('.2f')(n);
+		else if (n < 5) return d3.format('.1f')(n);
+		else return d3.format(',.0f')(n);
 	}
 	
