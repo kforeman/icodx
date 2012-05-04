@@ -49,7 +49,7 @@ foreach c of local causes {
 	foreach s in 1 2 {
 		display "`c', `s', `mod_`cc'_s`s''"
 		if missing("`mod_`cc'_s`s''") continue
-		odbc load, exec("SELECT iso3,year,age,mean_cf_corrected AS mean, upper_cf_corrected AS upper, lower_cf_corrected AS lower FROM m_corrected_by_country WHERE model_number=`mod_`cc'_s`s''") dsn($dsn) clear
+		odbc load, exec("SELECT iso3,year,age,mean_cf_corrected AS mean, upper_cf_corrected AS upper, lower_cf_corrected AS lower FROM g_country WHERE model_number=`mod_`cc'_s`s'' AND year<9999 AND age<=80") dsn($dsn) clear
 		keep if age <= 80
 		if _N == 0 continue
 		levelsof iso3, l(isos) c
@@ -59,7 +59,7 @@ foreach c of local causes {
 			outsheet year age mean upper lower using "$out_dir/models/`c'/`s'/results_`mod_`cc'_s`s''_`i'.csv", comma replace
 			restore
 		}
-		odbc load, exec("SELECT CONCAT('R_', CAST(region AS char)) AS region,year,age,mean_cf_corrected AS mean, upper_cf_corrected AS upper, lower_cf_corrected AS lower FROM m_corrected_by_region WHERE model_number=`mod_`cc'_s`s''") dsn($dsn) clear
+		odbc load, exec("SELECT CONCAT('R_', CAST(region AS char)) AS region,year,age,mean_cf_corrected AS mean, upper_cf_corrected AS upper, lower_cf_corrected AS lower FROM g_region WHERE model_number=`mod_`cc'_s`s'' AND year<9999 AND age<=80") dsn($dsn) clear
 		keep if age <= 80
 		levelsof region, l(regions) c
 		foreach r of local regions {
@@ -72,7 +72,7 @@ foreach c of local causes {
 }
 
 // envelopes
-odbc load, exec("SELECT iso3 AS geo, sex, year, age, pop, envelope, envelope_deaths AS env_corr FROM id_populations LEFT JOIN id_envelopes USING (iso3,year,sex,age) LEFT JOIN m_envelopes_by_country USING (iso3,year,sex,age);") dsn($dsn) clear
+odbc load, exec("SELECT iso3 AS geo,year,age,pop,envelope,envelope_death AS env_corr FROM id_populations LEFT JOIN id_envelopes USING (iso3,year,sex,age) LEFT JOIN e_country USING (iso3,year,sex,age) WHERE  age<=80 AND year < 9999;") dsn($dsn) clear
 keep if age <= 80
 levelsof geo, l(geos) c
 foreach g of local geos {
@@ -85,7 +85,7 @@ foreach g of local geos {
 		restore
 	}
 }
-odbc load, exec("SELECT CONCAT('R_', CAST(region AS CHAR)) AS geo, sex, year, age, pop, envelope, envelope_deaths AS env_corr FROM id_populations_region LEFT JOIN id_envelopes_region USING (region,year,sex,age) LEFT JOIN m_envelopes_by_region USING (region,year,sex,age);") dsn($dsn) clear
+odbc load, exec("SELECT CONCAT('R_', CAST(region AS CHAR)) AS geo,year,age,pop,envelope,envelope_death AS env_corr FROM id_populations_region LEFT JOIN id_envelopes_region USING (region,year,sex,age) LEFT JOIN e_region USING (region,year,sex,age) WHERE age<=80 AND year < 9999;") dsn($dsn) clear
 keep if age <= 80
 levelsof geo, l(geos) c
 foreach g of local geos {

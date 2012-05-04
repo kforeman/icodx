@@ -14,8 +14,8 @@
 
 	// perform the query
 	$rows = array();
-	if (substr($_GET['geo'], 0, 2) == 'R_') $result = mysql_query('SELECT CONCAT("R_", CAST(region AS CHAR)) AS geo,year,age,pop,envelope,envelope_deaths AS env_corr FROM id_populations_region LEFT JOIN id_envelopes_region USING (region,year,sex,age) LEFT JOIN m_envelopes_by_region USING (region,year,sex,age) WHERE sex='.$_GET['sex'].' AND region='.substr($_GET['geo'], 2).' AND age<=80;');
-	else $result = mysql_query('SELECT iso3 AS geo,year,age,pop,envelope,envelope_deaths AS env_corr FROM id_populations LEFT JOIN id_envelopes USING (iso3,year,sex,age) LEFT JOIN m_envelopes_by_country USING (iso3,year,sex,age) WHERE sex='.$_GET['sex'].' AND iso3="'.$_GET['geo'].'" AND age<=80;');
+	if (substr($_GET['geo'], 0, 2) == 'R_') $result = mysql_query('SELECT CONCAT("R_", CAST(region AS CHAR)) AS geo,year,age,pop,envelope,envelope_death AS env_corr FROM id_populations_region LEFT JOIN id_envelopes_region USING (region,year,sex,age) LEFT JOIN e_region USING (region,year,sex,age) WHERE sex='.$_GET['sex'].' AND region='.substr($_GET['geo'], 2).' AND age<=80 AND year < 9999;');
+	else $result = mysql_query('SELECT iso3 AS geo,year,age,pop,envelope,envelope_death AS env_corr FROM id_populations LEFT JOIN id_envelopes USING (iso3,year,sex,age) LEFT JOIN e_country USING (iso3,year,sex,age) WHERE sex='.$_GET['sex'].' AND iso3="'.$_GET['geo'].'" AND age<=80;');
 	while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) $rows[] = $row;
 		
 	// return the results in json format

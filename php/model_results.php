@@ -15,11 +15,11 @@
 	// perform the query
 	$rows = array();
 	if (substr($_GET['geo'], 0, 2) == 'R_') {
-		if ($_GET['corrected'] == 1) $result = mysql_query('SELECT CONCAT("R_", CAST(region AS CHAR)) AS geo,year,age,mean_cf_corrected AS mean,upper_cf_corrected AS upper,lower_cf_corrected AS lower FROM m_corrected_by_region WHERE model_number='.$_GET['model_number'].' AND region='.substr($_GET['geo'], 2).' AND age <= 80;');	
+		if ($_GET['corrected'] == 1) $result = mysql_query('SELECT CONCAT("R_", CAST(region AS CHAR)) AS geo,year,age,mean_cf_death AS mean,upper_cf_death AS upper,lower_cf_death AS lower FROM g_region WHERE model_number='.$_GET['model_number'].' AND region='.substr($_GET['geo'], 2).' AND age <= 80 AND year < 9999');	
 		else $result = mysql_query('SELECT CONCAT("R_", CAST(region AS CHAR)) AS geo,year,age,mean_cf_estimate AS mean,upper_cf_estimate AS upper,lower_cf_estimate AS lower FROM m_models_by_region WHERE model_number='.$_GET['model_number'].' AND region='.substr($_GET['geo'], 2).' AND age <= 80;');	
 	}
 	else {
-		if ($_GET['corrected'] == 1) $result = mysql_query('SELECT year,age,mean_cf_corrected AS mean,upper_cf_corrected AS upper,lower_cf_corrected AS lower FROM m_corrected_by_country WHERE model_number='.$_GET['model_number'].' AND iso3="'.$_GET['geo'].'" AND age <= 80;');
+		if ($_GET['corrected'] == 1) $result = mysql_query('SELECT year,age,mean_cf_death AS mean,upper_cf_death AS upper,lower_cf_death AS lower FROM g_country WHERE model_number='.$_GET['model_number'].' AND iso3="'.$_GET['geo'].'" AND age <= 80 AND year < 9999;');
 		else $result = mysql_query('SELECT year,age,mean_cf_estimate AS mean,upper_cf_estimate AS upper,lower_cf_estimate AS lower FROM m_models_by_country WHERE model_number='.$_GET['model_number'].' AND iso3="'.$_GET['geo'].'" AND age <= 80;');	
 	}
 	while($row = mysql_fetch_array($result, MYSQL_ASSOC))
